@@ -1,0 +1,119 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  workspace:
+    name: Build workspace
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build and export
+        uses: docker/build-push-action@v2
+        with:
+          context: ./.devcontainer
+          tags: alz-workspace
+          outputs: type=docker,dest=/tmp/alz-workspace.tar
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: myimage
+          path: /tmp/alz-workspace.tar
+
+  lint:
+    name: Lint
+    needs: workspace
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: myimage
+          path: /tmp
+      - name: Load image
+        run: |
+          docker load --input /tmp/alz-workspace.tar
+          docker image ls -a
+      - name: Lint
+        run: docker run -it -v $PWD:/workspace -w="/workspace" alz-workspace make lint
+
+#   securityScan:
+#     name: Security Scan
+#     needs: workspace
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v1
+#       - name: Download artifact
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: myimage
+#           path: /tmp
+#       - name: Load image
+#         run: |
+#           docker load --input /tmp/alz-workspace.tar
+#           docker image ls -a
+#       - name: Lint
+#         run: docker run -it -v $PWD:/workspace -w="/srv" alz-workspace make print_vars
+
+#   build:
+#     name: Build Artifact
+#     needs: [lint, securityScan]
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#       - name: Build
+#         run: |
+#           make build
+#       - name: Add Makefile to artifact
+#         run: |
+#           cp Makefile dist/Makefile
+#       - name: Archive build artifacts
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: dist
+#           path: dist
+#           retention-days: 1
+
+#   publish:
+#     name: Publish
+#     needs: build
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: Download build artifact
+#         uses: actions/download-artifact@v2
+#       - name: Move Makefile
+#         run: |
+#           mv dist/Makefile Makefile
+#       - name: Set AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-region: us-east-1
+#           aws-access-key-id: ${{ secrets.CICD_AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.CICD_AWS_SECRET_ACCESS_KEY }}
+#           role-to-assume: CICDServiceRole
+#       - name: Publish release artifact
+#         run: |
+#           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+#           BRANCH_ARR=($(echo "$GITHUB_REF" | tr '/' '\n'))
+#           VERSION=$(echo "$BRANCH_ARR[4]")
+#           ls -al dist
+#           zip -r snapshot.zip dist/
+#           aws s3 cp snapshot.zip s3://com.laudio.releases/infrastructure/aws-landing-zone/$VERSION-$BUILD_ID.zip
+          
