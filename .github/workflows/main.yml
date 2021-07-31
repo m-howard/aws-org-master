@@ -24,6 +24,7 @@ jobs:
       - name: Build and export
         uses: docker/build-push-action@v2
         with:
+          context: .
           file: .devcontainer/Dockerfile
           tags: alz-workspace
           outputs: type=docker,dest=/tmp/alz-workspace.tar
