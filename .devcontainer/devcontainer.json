@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.158.0/containers/python-3
+{
+  "name": "Python3.8 + NodeJs14",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "cacheFrom": "mcr.microsoft.com/vscode/devcontainers/base:buster"
+  },
+  // Set *default* container specific settings.json values on container create.
+  "settings": {
+    "editor.formatOnSave": true,
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "python.pythonPath": "/usr/local/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
+    "python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+    "cfnLint.path": "/home/vscode/.local/bin/cfn-lint"
+  },
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "ms-python.python",
+    "redhat.vscode-yaml",
+    "kddejong.vscode-cfn-lint",
+    "editorconfig.editorconfig",
+    "davidanson.vscode-markdownlint"
+  ],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  //"postCreateCommand": "npm install -g aws-cdk markdownlint-cli && pip3 install --user -r requirements.txt",
+  // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "vscode"
+}
