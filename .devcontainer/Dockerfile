@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/vscode/devcontainers/base:buster
 
 COPY .devcontainer/scripts/*.sh /tmp/scripts/
+COPY requirements.txt /tmp/
 
 # [Option] Install zsh
 ARG INSTALL_ZSH="true"
@@ -31,7 +32,6 @@ ENV PATH=${PATH}:${PIPX_BIN_DIR}
 RUN if [ "${INSTALL_PYTHON}" = "true" ]; then bash /tmp/scripts/python.sh "${PYTHON_VERSION}" "/usr/local" "${PIPX_HOME}" "${USERNAME}"; fi \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /tmp/
 RUN if [ "${INSTALL_PYTHON}" = "true" ]; then pip3 install -r /tmp/requirements.txt; fi
 
 # NODEJS
