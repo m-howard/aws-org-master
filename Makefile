@@ -3,14 +3,14 @@ all: lint scan build
 
 .PHONY: lint
 lint:
-    @echo "Linting ran"
+	@echo "Linting ran"
 
 .PHONY: scan
 scan:
-    @echo "Scanning ran"
+	@echo "Scanning ran"
 
 .PHONY: build
 build:
-    @mkdir -p dist
-    @touch dist/test.txt
-    @echo "Build ran"
+	@mkdir -p dist
+	@touch dist/test.txt
+	@echo "Build ran"
