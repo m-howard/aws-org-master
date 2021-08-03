@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: myimage
-          path: /tmp/workspace.tar
+          path: /tmp/builder.tar
 
   lint:
     name: Lint
@@ -60,7 +60,6 @@ jobs:
           context: .
           file: .devcontainer/Dockerfile
           target: lint
-          cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
 #       - name: Lint
 #         run: docker build --target lint -f .devcontainer/Dockerfile .
 
