@@ -5,7 +5,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
-    "cacheFrom": "mcr.microsoft.com/vscode/devcontainers/base:buster"
+    "cacheFrom": "mcr.microsoft.com/vscode/devcontainers/python:3.8"
   },
   // Set *default* container specific settings.json values on container create.
   "settings": {
