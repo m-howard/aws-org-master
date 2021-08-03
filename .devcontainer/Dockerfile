@@ -29,10 +29,10 @@ FROM builder as lint
 RUN make lint
 
 ###########################
-FROM build as scan
-RUN make scan
+FROM builder as scan
+RUN make sec_scan
 
 ###########################
-FROM build as build
+FROM builder as build
 RUN make build
 
