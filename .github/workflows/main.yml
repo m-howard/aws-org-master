@@ -31,7 +31,6 @@ jobs:
 
   securityScan:
     name: Security Scan
-    needs: lint
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -43,7 +42,7 @@ jobs:
         with:
           context: .
           file: .devcontainer/Dockerfile
-          target: sec_scan
+          target: scan
           cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
 #       - name: Lint
 #         run: docker build --target lint -f .devcontainer/Dockerfile .
