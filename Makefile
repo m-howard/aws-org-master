@@ -1,12 +1,12 @@
 
-all: lint scan build
+all: lint sec_scan build
 
 .PHONY: lint
 lint:
 	@echo "Linting ran"
 
-.PHONY: scan
-scan:
+.PHONY: sec_scan
+sec_scan:
 	@echo "Scanning ran"
 
 .PHONY: build
