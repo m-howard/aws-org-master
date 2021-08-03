@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:3.8
+FROM mcr.microsoft.com/vscode/devcontainers/python:3.8 as workspace
+
+RUN mkdir -p /workspace
 
 # [Option] Install Node.js
 ARG INSTALL_NODE="true"
@@ -16,3 +18,21 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
 
 # [Optional] Uncomment this line to install global node packages.
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g markdownlint-cli" 2>&1
+
+###########################
+FROM workspace as builder
+COPY . /workspace
+WORKDIR /workspace
+
+###########################
+FROM builder as lint
+RUN make lint
+
+###########################
+FROM build as scan
+RUN make scan
+
+###########################
+FROM build as build
+RUN make build
+
