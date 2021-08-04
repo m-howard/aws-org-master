@@ -191,7 +191,7 @@ jobs:
           ls -al
           echo ${ARTIFACT_NAME}
           unzip $ARTIFACT_NAME.zip
-          mv dist/Makefile Makefile
+          ls -al
           ls -al dist
 
 #   publish:
