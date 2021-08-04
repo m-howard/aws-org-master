@@ -111,7 +111,7 @@ jobs:
 
   build:
     name: Build Artifact
-#     needs: [lint, securityScan]
+    needs: prep #[lint, securityScan]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
