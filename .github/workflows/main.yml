@@ -140,7 +140,7 @@ jobs:
 #           cache-from: type=local,src=/tmp/.buildx-cache
       - name: Build
         run: |
-          docker run -d --mount type=bind,source=${GITHUB_WORKSPACE},target=/workspace alz-workspace ls -al
+          docker run -d --mount type=bind,source=${GITHUB_WORKSPACE},target=/workspace alz-workspace "make build && ls -al"
           ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
@@ -148,10 +148,10 @@ jobs:
           name: dist
           path: dist
           retention-days: 1
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+#       - name: Move cache
+#         run: |
+#           rm -rf /tmp/.buildx-cache
+#           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
 #   publish:
 #     name: Publish
