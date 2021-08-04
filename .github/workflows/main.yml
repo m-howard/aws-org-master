@@ -69,6 +69,7 @@ jobs:
       - name: Build
         run: |
           docker run -d -v $GITHUB_WORKSPACE:/workspace alz-workspace make build
+          ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
