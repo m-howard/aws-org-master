@@ -184,9 +184,11 @@ jobs:
         with:
           name: ${{ steps.prep.outputs.artifact_name }}
       - name: Extract
+        env: 
+          ARTIFACT_NAME: ${{ steps.prep.outputs.artifact_name }}
         run: |
           ls -al
-          unzip ${{ steps.prep.outputs.artifact_name }}.zip
+          unzip ${ARTIFACT_NAME}.zip
           mv dist/Makefile Makefile
           ls -al dist
 
