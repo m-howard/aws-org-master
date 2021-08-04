@@ -134,13 +134,13 @@ jobs:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
-          target: workspace
-          tags: alz-workspace
+          target: builder
+          tags: alz-builder
           load: true
 #           cache-from: type=local,src=/tmp/.buildx-cache
       - name: Build
         run: |
-          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-workspace ls -al
+          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-builder ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
