@@ -78,11 +78,6 @@ jobs:
           file: .devcontainer/Dockerfile
           target: lint
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   securityScan:
     name: Security Scan
@@ -103,7 +98,7 @@ jobs:
           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-multi-buildx
-      - name: Run lint stage
+      - name: Run security scan stage
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -111,11 +106,6 @@ jobs:
           file: .devcontainer/Dockerfile
           target: scan
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 #       - name: Lint
 #         run: docker build --target lint -f .devcontainer/Dockerfile .
 
@@ -138,19 +128,19 @@ jobs:
           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-multi-buildx
-      - name: Run lint stage
+      - name: Run build stage
         uses: docker/build-push-action@v2
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
-          target: builder
-          tags: alz-builder
+          target: workspace
+          tags: alz-workspace:latest
+          load: true
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
       - name: Build
         run: |
-          docker run -d -v $GITHUB_WORKSPACE:/workspace alz-builder make build
+          docker run -d -v $GITHUB_WORKSPACE:/workspace alz-workspace:latest make build
           ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
