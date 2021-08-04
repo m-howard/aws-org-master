@@ -51,83 +51,93 @@ jobs:
 #           rm -rf /tmp/.buildx-cache
 #           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
         
-#   lint:
-#     name: Lint
+  lint:
+    name: Lint
 #     needs: prep
-#     runs-on: ubuntu-20.04
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#       - name: Set up Docker Buildx
-#         id: buildx
-#         uses: docker/setup-buildx-action@v1
-#         with:
-#           install: true
-#       - name: Cache Docker Layers
-#         uses: actions/cache@v2
-#         with:
-#           path: /tmp/.buildx-cache
-#           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-#           restore-keys: |
-#             ${{ runner.os }}-multi-buildx
-#       - name: Run lint stage
-#         uses: docker/build-push-action@v2
-#         with:
-#           context: .
-#           builder: ${{ steps.buildx.outputs.name }}
-#           file: .devcontainer/Dockerfile
-#           target: lint
-#           cache-from: type=local,src=/tmp/.buildx-cache
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
+      - name: Run lint stage
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: .devcontainer/Dockerfile
+          target: lint
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-#   securityScan:
-#     name: Security Scan
+  securityScan:
+    name: Security Scan
 #     needs: prep
-#     runs-on: ubuntu-20.04
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#       - name: Set up Docker Buildx
-#         id: buildx
-#         uses: docker/setup-buildx-action@v1
-#         with:
-#           install: true
-#       - name: Cache Docker Layers
-#         uses: actions/cache@v2
-#         with:
-#           path: /tmp/.buildx-cache
-#           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-#           restore-keys: |
-#             ${{ runner.os }}-multi-buildx
-#       - name: Run security scan stage
-#         uses: docker/build-push-action@v2
-#         with:
-#           context: .
-#           builder: ${{ steps.buildx.outputs.name }}
-#           file: .devcontainer/Dockerfile
-#           target: scan
-#           cache-from: type=local,src=/tmp/.buildx-cache
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
+      - name: Run security scan stage
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: .devcontainer/Dockerfile
+          target: scan
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 #       - name: Lint
 #         run: docker build --target lint -f .devcontainer/Dockerfile .
 
   build:
     name: Build Artifact
-#     needs: prep #[lint, securityScan]
+    needs: [lint, securityScan]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-#       - name: Set up Docker Buildx
-#         id: buildx
-#         uses: docker/setup-buildx-action@v1
-#         with:
-#           install: true
-#       - name: Cache Docker Layers
-#         uses: actions/cache@v2
-#         with:
-#           path: /tmp/.buildx-cache
-#           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-#           restore-keys: |
-#             ${{ runner.os }}-multi-buildx
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
       - name: Run build stage
         uses: docker/build-push-action@v2
         with:
@@ -137,21 +147,24 @@ jobs:
           target: builder
           tags: alz-builder
           load: true
-#           cache-from: type=local,src=/tmp/.buildx-cache
+          cache-from: type=local,src=/tmp/.buildx-cache
       - name: Build
         run: |
-          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-builder make build && ls -al
-          ls -al
+          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-builder make build
+      - name: Prepare artifact
+        id: prep
+        run: |
+          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+          TEST_REFS=refs/heads/release/1.0.0
+          BRANCH_ARR=($(echo "$TEST_REF" | tr '/' '\n'))
+          VERSION=$(echo "$BRANCH_ARR[4]")
+          echo ::set-output name=version::${VERSION}-${BUILD_ID}
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
-          name: dist
+          name: ${{ steps.prep.outputs.version }}
           path: dist
           retention-days: 1
-#       - name: Move cache
-#         run: |
-#           rm -rf /tmp/.buildx-cache
-#           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
 #   publish:
 #     name: Publish
