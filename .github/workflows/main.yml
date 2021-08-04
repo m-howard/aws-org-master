@@ -62,13 +62,13 @@ jobs:
           context: .
           file: .devcontainer/Dockerfile
           target: workspace
-          tags: alz-workspace:latest
+          tags: alz-workspace
           cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
           push: false
           load: true
       - name: Build
         run: |
-          docker run -d -v .:/workspace alz-workspace:latest make build
+          docker run -d -v $GITHUB_WORKSPACE:/workspace alz-workspace make build
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
