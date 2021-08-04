@@ -13,37 +13,109 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  prep:
+    name: Prepare Build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Prepare
+        id: prep
+        run: |
+          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+          echo ::set-output name=build_id::${BUILD_ID}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ gitthub.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
+      - name: Build Workspace Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: .devcontainer/Dockerfile
+          target: workspace
+          tags: alz-workspace:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+        
   lint:
     name: Lint
+    needs: prep
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ gitthub.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
       - name: Run lint stage
         uses: docker/build-push-action@v2
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
           target: lint
-          cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   securityScan:
     name: Security Scan
+    needs: prep
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ gitthub.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
       - name: Run lint stage
         uses: docker/build-push-action@v2
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
           target: scan
-          cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 #       - name: Lint
 #         run: docker build --target lint -f .devcontainer/Dockerfile .
 
@@ -55,17 +127,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v1
-      - name: Create builder container
+        with:
+          install: true
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-multi-buildx-${{ gitthub.sha }}
+          restore-keys: |
+            ${{ runner.os }}-multi-buildx
+      - name: Run lint stage
         uses: docker/build-push-action@v2
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
           file: .devcontainer/Dockerfile
           target: builder
           tags: alz-builder
-          cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
-          push: false
-          load: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
       - name: Build
         run: |
           docker run -d -v $GITHUB_WORKSPACE:/workspace alz-builder make build
@@ -76,6 +158,10 @@ jobs:
           name: dist
           path: dist
           retention-days: 1
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
 #   publish:
 #     name: Publish
