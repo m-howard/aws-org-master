@@ -172,6 +172,8 @@ jobs:
           name: ${{ steps.prep.outputs.artifact_name }}
           path: ${{ steps.prep.outputs.artifact_name }}.zip
           retention-days: 1
+    outputs:
+      artifact_name: ${{ steps.prep.outputs.artifact_name }}
           
   deploy:
     name: Deploy
@@ -181,13 +183,13 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ steps.prep.outputs.artifact_name }}
+          name: ${{ needs.build.outputs.artifact_name }}
       - name: Extract
         env: 
-          ARTIFACT_NAME: ${{ steps.prep.outputs.artifact_name }}
+          ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
         run: |
           ls -al
-          echo ${{env.ARTIFACT_NAME}}
+          echo ${ARTIFACT_NAME}
           unzip $ARTIFACT_NAME.zip
           mv dist/Makefile Makefile
           ls -al dist
