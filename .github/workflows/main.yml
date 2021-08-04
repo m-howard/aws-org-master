@@ -156,8 +156,7 @@ jobs:
         run: |
           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
           TEST_REFS=refs/heads/release/1.0.0
-          BRANCH_ARR=($(echo "$TEST_REF" | tr '/' '\n'))
-          VERSION=$(echo "$BRANCH_ARR[4]")
+          VERSION=${GITHUB_REF#refs/heads/release/}
           echo ::set-output name=version::${VERSION}-${BUILD_ID}
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
