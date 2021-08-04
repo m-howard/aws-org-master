@@ -187,8 +187,8 @@ jobs:
           ARTIFACT_NAME: ${{ steps.prep.outputs.artifact_name }}
         run: |
           ls -al
-          echo ${env.ARTIFACT_NAME}
-          unzip ${ARTIFACT_NAME}.zip
+          echo ${{env.ARTIFACT_NAME}}
+          unzip $ARTIFACT_NAME.zip
           mv dist/Makefile Makefile
           ls -al dist
 
