@@ -13,43 +13,43 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  prep:
-    name: Prepare Build
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Prepare
-        id: prep
-        run: |
-          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
-          echo ::set-output name=build_id::${BUILD_ID}
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          install: true
-      - name: Cache Docker Layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-multi-buildx
-      - name: Build Workspace Image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          builder: ${{ steps.buildx.outputs.name }}
-          file: .devcontainer/Dockerfile
-          target: workspace
-          tags: alz-workspace:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+#   prep:
+#     name: Prepare Build
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#       - name: Prepare
+#         id: prep
+#         run: |
+#           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+#           echo ::set-output name=build_id::${BUILD_ID}
+#       - name: Set up Docker Buildx
+#         id: buildx
+#         uses: docker/setup-buildx-action@v1
+#         with:
+#           install: true
+#       - name: Cache Docker Layers
+#         uses: actions/cache@v2
+#         with:
+#           path: /tmp/.buildx-cache
+#           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+#           restore-keys: |
+#             ${{ runner.os }}-multi-buildx
+#       - name: Build Workspace Image
+#         uses: docker/build-push-action@v2
+#         with:
+#           context: .
+#           builder: ${{ steps.buildx.outputs.name }}
+#           file: .devcontainer/Dockerfile
+#           target: workspace
+#           tags: alz-workspace:latest
+#           cache-from: type=local,src=/tmp/.buildx-cache
+#           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+#       - name: Move cache
+#         run: |
+#           rm -rf /tmp/.buildx-cache
+#           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
         
 #   lint:
 #     name: Lint
@@ -111,7 +111,7 @@ jobs:
 
   build:
     name: Build Artifact
-    needs: prep #[lint, securityScan]
+#     needs: prep #[lint, securityScan]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -121,27 +121,26 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           install: true
-      - name: Cache Docker Layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-multi-buildx
-#       - name: Run build stage
-#         uses: docker/build-push-action@v2
+#       - name: Cache Docker Layers
+#         uses: actions/cache@v2
 #         with:
-#           context: .
-#           builder: ${{ steps.buildx.outputs.name }}
-#           file: .devcontainer/Dockerfile
-#           target: workspace
-#           tags: alz-workspace:latest
-#           load: true
+#           path: /tmp/.buildx-cache
+#           key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+#           restore-keys: |
+#             ${{ runner.os }}-multi-buildx
+      - name: Run build stage
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: .devcontainer/Dockerfile
+          target: workspace
+          tags: alz-workspace
+          load: true
 #           cache-from: type=local,src=/tmp/.buildx-cache
       - name: Build
         run: |
-          docker build --target workspace --cache-from type=local,src=/tmp/.buildx-cache -f .devcontainer/Dockerfile -t alz-workspace:latest .
-          docker run -d --mount type=bind,source=${GITHUB_WORKSPACE},target=/workspace alz-workspace:latest make build
+          docker run -d --mount type=bind,source=${GITHUB_WORKSPACE},target=/workspace alz-workspace ls -al
           ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
