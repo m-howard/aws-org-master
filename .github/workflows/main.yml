@@ -59,14 +59,15 @@ jobs:
       - name: Create builder container
         uses: docker/build-push-action@v2
         with:
+          push: false
           context: .
           file: .devcontainer/Dockerfile
           target: workspace
-          tags: alz-workspace
+          tags: alz-workspace:latest
           cache-from: mcr.microsoft.com/vscode/devcontainers/python:3.8
       - name: Build
         run: |
-          docker run -d -v .:/workspace alz-workspace make build
+          docker run -d -v .:/workspace alz-workspace:latest make build
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
