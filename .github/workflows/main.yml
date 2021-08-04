@@ -140,7 +140,8 @@ jobs:
 #           cache-from: type=local,src=/tmp/.buildx-cache
       - name: Build
         run: |
-          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-builder ls -al
+          docker run -v ${GITHUB_WORKSPACE}:/workspace alz-builder make build && ls -al
+          ls -al
       - name: Archive build artifact
         uses: actions/upload-artifact@v2
         with:
