@@ -16,6 +16,8 @@ jobs:
       - name: Prepare artifact
         id: prep
         run: |
+          mkdir -p dist
+          touch dist/test.txt
           BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
           RELEASE=${GITHUB_REF#refs/heads/release/}
