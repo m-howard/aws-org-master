@@ -22,7 +22,7 @@ jobs:
           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
           RELEASE=${GITHUB_REF#refs/heads/release/}
           VERSION=${RELEASE}+build.${BUILD_NUM}.${BUILD_ID}
-          ARTIFACT_NAME=artifact_${VERSION}.zip
+          ARTIFACT_NAME=artifact_${VERSION}
           zip -r ${ARTIFACT_NAME}.zip dist/
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=artifact_name::${ARTIFACT_NAME}
@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ steps.prep.outputs.artifact_name }}
-          path: ${{ steps.prep.outputs.artifact_name }}.zip
+          path: ${{ steps.prep.outputs.artifact_name }}
           retention-days: 1
     outputs:
       version: ${{ steps.prep.outputs.version}}

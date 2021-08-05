@@ -8,8 +8,8 @@ on:
         required: true
 
 jobs:
-  build:
-    name: Build Artifact
+  deploy:
+    name: Deploy Artifact
     runs-on: ubuntu-20.04
     steps:
       - name: Download Artifact
@@ -17,7 +17,7 @@ jobs:
         with:
           workflow: ci.yml
           workflow_conclusion: success
-          name: artifact_${{ github.event.inputs.version }}.zip
+          name: ${{ github.event.inputs.version }}
       - name: Debug
         run: ls -al
   # deploy:
