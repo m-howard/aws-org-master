@@ -1,0 +1,35 @@
+name: Continuous Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "release/*"
+
+jobs:
+  build:
+    name: Build Artifact
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Prepare artifact
+        id: prep
+        run: |
+          BUILD_NUM=$(echo $GITHUB_RUN_NUMBER)
+          BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+          RELEASE=${GITHUB_REF#refs/heads/release/}
+          VERSION=${RELEASE}+build.${BUILD_NUM}.${BUILD_ID}
+          ARTIFACT_NAME=artifact_${VERSION}.zip
+          zip -r ${ARTIFACT_NAME}.zip dist/
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=artifact_name::${ARTIFACT_NAME}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.prep.outputs.artifact_name }}
+          path: ${{ steps.prep.outputs.artifact_name }}.zip
+          retention-days: 1
+    outputs:
+      version: ${{ steps.prep.outputs.version}}
+      artifact_name: ${{ steps.prep.outputs.artifact_name }}
