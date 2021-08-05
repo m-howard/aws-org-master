@@ -11,13 +11,18 @@ jobs:
   deploy:
     name: Deploy Artifact
     runs-on: ubuntu-20.04
+    env:
+      version: ${{ github.event.inputs.version }}
+      artifact: ${{ github.event.inputs.version }}.zip
     steps:
       - name: Download Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: ci.yml
           workflow_conclusion: success
-          name: ${{ github.event.inputs.version }}
+          name: ${{ env.version }}
+      - name: Extract artifact
+        run: unzip ${{ env.artifact }}
       - name: Debug
         run: ls -al
   # deploy:
