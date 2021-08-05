@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - "release/*"
+      - "main"
   # push:
   #   branches:
   #     - "release/*"
@@ -17,6 +17,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Debug
+        run: |
+          echo "GITHUB_REF  = $GITHUB_REF"
+          echo "GITHUB_HEAD_REF = $GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF = $GITHUB_BASE_REF"
       - name: Prepare artifact
         id: prep
         run: |
