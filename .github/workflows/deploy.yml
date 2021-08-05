@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        required: true
+
+jobs:
+  build:
+    name: Build Artifact
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: ci.yml
+          workflow_conclusion: success
+          name: artifact_${{ github.event.inputs.version }}.zip
+      - name: Debug
+        run: ls -al
+  # deploy:
+  #   name: Deploy
+  #   needs: build
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: ${{ needs.build.outputs.artifact_name }}
+  #     - name: Extract
+  #       env:
+  #         ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+  #       run: |
+  #         ls -al
+  #         echo ${ARTIFACT_NAME}
+  #         unzip $ARTIFACT_NAME.zip
+  #         ls -al
+  #         ls -al dist
+#   publish:
+#     name: Publish
+#     needs: build
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: Download build artifact
+#         uses: actions/download-artifact@v2
+#       - name: Move Makefile
+#         run: |
+#           mv dist/Makefile Makefile
+#       - name: Set AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-region: us-east-1
+#           aws-access-key-id: ${{ secrets.CICD_AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.CICD_AWS_SECRET_ACCESS_KEY }}
+#           role-to-assume: CICDServiceRole
+#       - name: Publish release artifact
+#         run: |
+#           BUILD_ID=$(echo $GITHUB_SHA | head -c7)
+#           BRANCH_ARR=($(echo "$GITHUB_REF" | tr '/' '\n'))
+#           VERSION=$(echo "$BRANCH_ARR[4]")
+#           ls -al dist
+#           zip -r snapshot.zip dist/
+#           aws s3 cp snapshot.zip s3://com.laudio.releases/infrastructure/aws-landing-zone/$VERSION-$BUILD_ID.zip
+
