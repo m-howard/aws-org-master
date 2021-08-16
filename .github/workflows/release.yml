@@ -53,6 +53,5 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           title: ${{ steps.rename.outputs.release_version }}
-          automatic_release_tag: "latest"
           files: |
             version.txt
