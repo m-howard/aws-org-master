@@ -36,6 +36,7 @@ jobs:
         id: rename
         run: |
           RELEASE_VERSION=$(semver bump release ${{ github.event.inputs.build_version }})
+          echo ${RELEASE_VERSION}
           echo ::set-output name=release_version::${RELEASE_VERSION}
 
       - name: Bump version and push tag
@@ -44,7 +45,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ steps.rename.outputs.release_version }}
-          tag_prefix: ''
 
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
