@@ -1,0 +1,57 @@
+# This is a basic workflow to help you get started with Actions
+name: Release
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+#   push:
+#     branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description: Build Version
+        required: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  release:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Download semver tool
+        run: |
+          sudo curl https://raw.githubusercontent.com/fsaintjacques/semver-tool/3.0.0/src/semver -o /usr/local/bin/semver && sudo chmod +x /usr/local/bin/semver
+          semver --version
+          
+      - name: Download artifact
+        run: |
+          echo ${{ github.event.inputs.build_version }} >> version.txt
+      
+      - name: Rename artifact
+        id: rename
+        run: |
+          RELEASE_VERSION=$(semver bump release ${{ github.event.inputs.build_version }})
+          echo ::set-output name=release_version::${RELEASE_VERSION}
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.rename.outputs.release_version }}
+          tag_prefix: ''
+
+      - name: Create release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          title: ${{ steps.rename.outputs.release_version }}
+          automatic_release_tag: "latest"
+          files: |
+            version.txt
